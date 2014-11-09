@@ -83,9 +83,7 @@ class Image_Cache {
             }
           }
           else {
-            set_error_handler("record_warnings");
-            $image = file_get_contents($full_url);
-            restore_error_handler();
+            $image = self::_getRemoteImage($full_url);
           }
   
           // Image not found or invalid
@@ -142,6 +140,24 @@ class Image_Cache {
     }
 
     return array($resolved_url, $type, $message);
+  }
+
+  static private function _getRemoteImage($url) {
+    if (function_exists("curl_exec")) {
+      $curl = curl_init($url);
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+      $result = curl_exec($curl);
+      curl_close($curl);
+
+      return $result;
+    }
+    else {
+      set_error_handler("record_warnings");
+      $image = file_get_contents($url);
+      restore_error_handler();
+
+      return $image;
+    }
   }
 
   /**
